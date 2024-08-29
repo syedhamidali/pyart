@@ -11,7 +11,7 @@
         :class: sphx-glr-download-link-note
 
         :ref:`Go to the end <sphx_glr_download_examples_plotting_plot_rhi_cfradial.py>`
-        to download the full example code
+        to download the full example code.
 
 .. rst-class:: sphx-glr-example-title
 
@@ -25,7 +25,7 @@ Create a multiple panel RHI plot from a CF/Radial file
 An example which creates a multiple panel RHI plot of a CF/Radial file using
 a RadarDisplay object.
 
-.. GENERATED FROM PYTHON SOURCE LINES 10-62
+.. GENERATED FROM PYTHON SOURCE LINES 10-63
 
 
 
@@ -38,7 +38,8 @@ a RadarDisplay object.
 
 
 
-.. code-block:: default
+.. code-block:: Python
+
 
     print(__doc__)
 
@@ -67,7 +68,7 @@ a RadarDisplay object.
 
     for snum in radar.sweep_number["data"]:
         fixed_angle = radar.fixed_angle["data"][snum]
-        title = "HSRHI Az=%.3f" % (fixed_angle)
+        title = f"HSRHI Az={fixed_angle:.3f}"
         ax = fig.add_subplot(nplots, 1, snum + 1)
         display.plot(
             "reflectivity_horizontal",
@@ -96,7 +97,7 @@ a RadarDisplay object.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 2.429 seconds)
+   **Total running time of the script:** (0 minutes 1.856 seconds)
 
 
 .. _sphx_glr_download_examples_plotting_plot_rhi_cfradial.py:
@@ -105,16 +106,17 @@ a RadarDisplay object.
 
   .. container:: sphx-glr-footer sphx-glr-footer-example
 
+    .. container:: sphx-glr-download sphx-glr-download-jupyter
 
-
+      :download:`Download Jupyter notebook: plot_rhi_cfradial.ipynb <plot_rhi_cfradial.ipynb>`
 
     .. container:: sphx-glr-download sphx-glr-download-python
 
       :download:`Download Python source code: plot_rhi_cfradial.py <plot_rhi_cfradial.py>`
 
-    .. container:: sphx-glr-download sphx-glr-download-jupyter
+    .. container:: sphx-glr-download sphx-glr-download-zip
 
-      :download:`Download Jupyter notebook: plot_rhi_cfradial.ipynb <plot_rhi_cfradial.ipynb>`
+      :download:`Download zipped: plot_rhi_cfradial.zip <plot_rhi_cfradial.zip>`
 
 
 .. only:: html

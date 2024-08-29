@@ -11,7 +11,7 @@
         :class: sphx-glr-download-link-note
 
         :ref:`Go to the end <sphx_glr_download_examples_plotting_plot_rhi_cfradial_singlescan.py>`
-        to download the full example code
+        to download the full example code.
 
 .. rst-class:: sphx-glr-example-title
 
@@ -25,7 +25,7 @@ Create a multiple panel RHI plot from a CF/Radial file
 An example which creates a RHI plot of a CF/Radial file using
 a RadarDisplay object.
 
-.. GENERATED FROM PYTHON SOURCE LINES 10-49
+.. GENERATED FROM PYTHON SOURCE LINES 10-50
 
 
 
@@ -38,7 +38,8 @@ a RadarDisplay object.
 
 
 
-.. code-block:: default
+.. code-block:: Python
+
 
     print(__doc__)
 
@@ -62,7 +63,7 @@ a RadarDisplay object.
     # nplots = radar.nsweeps
 
     fixed_angle = radar.fixed_angle["data"][0]
-    title = "HSRHI Az=%.3f" % (fixed_angle)
+    title = f"HSRHI Az={fixed_angle:.3f}"
     ax = fig.add_subplot(1, 1, 1)
     display.plot(
         "reflectivity_horizontal",
@@ -83,7 +84,7 @@ a RadarDisplay object.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 4.585 seconds)
+   **Total running time of the script:** (0 minutes 1.112 seconds)
 
 
 .. _sphx_glr_download_examples_plotting_plot_rhi_cfradial_singlescan.py:
@@ -92,16 +93,17 @@ a RadarDisplay object.
 
   .. container:: sphx-glr-footer sphx-glr-footer-example
 
+    .. container:: sphx-glr-download sphx-glr-download-jupyter
 
-
+      :download:`Download Jupyter notebook: plot_rhi_cfradial_singlescan.ipynb <plot_rhi_cfradial_singlescan.ipynb>`
 
     .. container:: sphx-glr-download sphx-glr-download-python
 
       :download:`Download Python source code: plot_rhi_cfradial_singlescan.py <plot_rhi_cfradial_singlescan.py>`
 
-    .. container:: sphx-glr-download sphx-glr-download-jupyter
+    .. container:: sphx-glr-download sphx-glr-download-zip
 
-      :download:`Download Jupyter notebook: plot_rhi_cfradial_singlescan.ipynb <plot_rhi_cfradial_singlescan.ipynb>`
+      :download:`Download zipped: plot_rhi_cfradial_singlescan.zip <plot_rhi_cfradial_singlescan.zip>`
 
 
 .. only:: html

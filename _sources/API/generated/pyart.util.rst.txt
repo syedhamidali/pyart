@@ -25,6 +25,10 @@
     
     angular_texture_2d
     
+    column_vertical_profile
+    
+    compute_directional_stats
+    
     cross_section_ppi
     
     cross_section_rhi
@@ -38,6 +42,8 @@
     datetimes_from_dataset
     
     datetimes_from_radar
+    
+    determine_sweeps
     
     estimate_noise_hs74
     
@@ -56,6 +62,8 @@
     is_vpt
     
     join_radar
+    
+    ma_broadcast_to
     
     mean_of_two_angles
     

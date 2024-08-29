@@ -11,7 +11,7 @@
         :class: sphx-glr-download-link-note
 
         :ref:`Go to the end <sphx_glr_download_examples_plotting_plot_xsect.py>`
-        to download the full example code
+        to download the full example code.
 
 .. rst-class:: sphx-glr-example-title
 
@@ -25,7 +25,7 @@ Plot a cross section from  a PPI volume
 An example which extracts a cross section at two azimuth angles from a volume
 of PPI scans and plots both cross sections.
 
-.. GENERATED FROM PYTHON SOURCE LINES 10-45
+.. GENERATED FROM PYTHON SOURCE LINES 10-46
 
 
 
@@ -38,7 +38,8 @@ of PPI scans and plots both cross sections.
 
 
 
-.. code-block:: default
+.. code-block:: Python
+
 
     print(__doc__)
 
@@ -79,7 +80,7 @@ of PPI scans and plots both cross sections.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 1.958 seconds)
+   **Total running time of the script:** (0 minutes 1.401 seconds)
 
 
 .. _sphx_glr_download_examples_plotting_plot_xsect.py:
@@ -88,16 +89,17 @@ of PPI scans and plots both cross sections.
 
   .. container:: sphx-glr-footer sphx-glr-footer-example
 
+    .. container:: sphx-glr-download sphx-glr-download-jupyter
 
-
+      :download:`Download Jupyter notebook: plot_xsect.ipynb <plot_xsect.ipynb>`
 
     .. container:: sphx-glr-download sphx-glr-download-python
 
       :download:`Download Python source code: plot_xsect.py <plot_xsect.py>`
 
-    .. container:: sphx-glr-download sphx-glr-download-jupyter
+    .. container:: sphx-glr-download sphx-glr-download-zip
 
-      :download:`Download Jupyter notebook: plot_xsect.ipynb <plot_xsect.ipynb>`
+      :download:`Download zipped: plot_xsect.zip <plot_xsect.zip>`
 
 
 .. only:: html
