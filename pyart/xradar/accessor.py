@@ -5,13 +5,12 @@ Utilities for interfacing between xradar and Py-ART
 
 import copy
 
-import datatree
 import numpy as np
 import pandas as pd
-from datatree import DataTree, formatting, formatting_html
-from datatree.treenode import NodePath
-from xarray import DataArray, Dataset, concat
-from xarray.core import utils
+import xarray as xr
+from xarray import DataArray, Dataset, DataTree, concat
+from xarray.core import formatting, formatting_html, utils
+from xarray.core.treenode import NodePath
 from xradar.accessors import XradarAccessor
 from xradar.util import get_sweep_keys
 
@@ -807,9 +806,9 @@ def _point_altitude_data_factory(grid):
     return _point_altitude_data
 
 
-@datatree.register_datatree_accessor("pyart")
+@xr.register_datatree_accessor("pyart")
 class XradarDataTreeAccessor(XradarAccessor):
-    """Adds a number of pyart specific methods to datatree.DataTree objects."""
+    """Adds a number of pyart specific methods to xarray.DataTree objects."""
 
     def to_radar(self, scan_type=None) -> DataTree:
         """
@@ -820,7 +819,7 @@ class XradarDataTreeAccessor(XradarAccessor):
             Scan type (ppi, rhi, etc.)
         Returns
         -------
-        dt: datatree.Datatree
+        dt: xarray.Datatree
             Datatree including pyart.Radar methods
         """
         dt = self.xarray_obj
