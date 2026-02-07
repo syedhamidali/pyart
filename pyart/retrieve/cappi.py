@@ -69,6 +69,7 @@ def create_cappi(
     # Initialize containers for the stacked data and nyquist velocities
     data_stack = []
     nyquist_stack = []
+    gate_z_stack = []
 
     # Process each sweep individually
     for sweep in range(radar.nsweeps):
@@ -82,6 +83,25 @@ def create_cappi(
             )
             nyquist = radar.fields[vel_field]["data"][sweep_slice].max()
 
+        # Extract and sort azimuth angles (used across all fields)
+        azimuth = radar.azimuth["data"][sweep_slice]
+        azimuth_sorted_idx = np.argsort(azimuth)
+        azimuth_sorted = azimuth[azimuth_sorted_idx]
+        time = radar.time["data"][sweep_slice][azimuth_sorted_idx]
+
+        # Gate heights from radar geometry already include the 4/3 Earth-radius refractivity model
+        sweep_gate_z = radar.gate_z["data"][sweep_slice][azimuth_sorted_idx]
+
+        if sweep == first_sweep:
+            azimuth_final = azimuth_sorted
+            time_final = time
+        else:
+            # Interpolate gate heights to the reference azimuth grid (keeps refractivity-aware heights aligned)
+            gate_interpolator = RectBivariateSpline(
+                azimuth_sorted, radar.range["data"], sweep_gate_z
+            )
+            sweep_gate_z = gate_interpolator(azimuth_final, radar.range["data"])
+
         sweep_data = {}
 
         for field in fields:
@@ -92,27 +112,21 @@ def create_cappi(
                 data = np.ma.masked_array(
                     data, gatefilter.gate_excluded[sweep_slice, :]
                 )
-            time = radar.time["data"][sweep_slice]
 
-            # Extract and sort azimuth angles
-            azimuth = radar.azimuth["data"][sweep_slice]
-            azimuth_sorted_idx = np.argsort(azimuth)
-            azimuth = azimuth[azimuth_sorted_idx]
             data = data[azimuth_sorted_idx]
 
-            # Store initial lat/lon for reordering
-            if sweep == first_sweep:
-                azimuth_final = azimuth
-                time_final = time
-            else:
+            if sweep != first_sweep:
                 # Interpolate data for consistent azimuth ordering across sweeps
-                interpolator = RectBivariateSpline(azimuth, radar.range["data"], data)
+                interpolator = RectBivariateSpline(
+                    azimuth_sorted, radar.range["data"], data
+                )
                 data = interpolator(azimuth_final, radar.range["data"])
 
             sweep_data[field] = data[np.newaxis, :, :]
 
         data_stack.append(sweep_data)
         nyquist_stack.append(nyquist)
+        gate_z_stack.append(sweep_gate_z[np.newaxis, :, :])
 
     nyquist_stack = np.array(nyquist_stack)
 
@@ -123,7 +137,13 @@ def create_cappi(
         data_stack = [
             sweep_data for i, sweep_data in enumerate(data_stack) if nyquist_mask[i]
         ]
+        gate_z_stack = [
+            sweep_gate_z for i, sweep_gate_z in enumerate(gate_z_stack) if nyquist_mask[i]
+        ]
 
+    z_3d = np.concatenate(gate_z_stack, axis=0)
+    # Find nearest gates to requested height using refractivity/curvature-adjusted geometry
+    height_idx = np.argmin(np.abs(z_3d - height), axis=0)
     # Generate CAPPI for each field using data_stack
     fields_data = {}
     for field in fields:
@@ -133,23 +153,11 @@ def create_cappi(
 
         # Sort azimuth for all sweeps
         dim0 = data_3d.shape[1:]
-        azimuths = np.linspace(0, 359, dim0[0])
-        elevation_angles = radar.fixed_angle["data"][: data_3d.shape[0]]
-        ranges = radar.range["data"]
 
-        theta = (450 - azimuths) % 360
-        THETA, PHI, R = np.meshgrid(theta, elevation_angles, ranges)
-        Z = R * np.sin(PHI * np.pi / 180)
-
-        # Extract the data slice corresponding to the requested height
-        height_idx = np.argmin(np.abs(Z - height), axis=0)
-        CAPPI = np.array(
-            [
-                data_3d[height_idx[j, i], j, i]
-                for j in range(dim0[0])
-                for i in range(dim0[1])
-            ]
-        ).reshape(dim0)
+        # Extract the data slice corresponding to the requested height using gate geometry (curved Earth)
+        CAPPI = np.take_along_axis(
+            data_3d, height_idx[np.newaxis, :, :], axis=0
+        ).squeeze(axis=0)
 
         # Retrieve units and handle case where units might be missing
         units = radar.fields[field].get("units", "").lower()
