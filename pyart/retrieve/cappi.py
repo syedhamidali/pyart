@@ -138,7 +138,9 @@ def create_cappi(
             sweep_data for i, sweep_data in enumerate(data_stack) if nyquist_mask[i]
         ]
         gate_z_stack = [
-            sweep_gate_z for i, sweep_gate_z in enumerate(gate_z_stack) if nyquist_mask[i]
+            sweep_gate_z
+            for i, sweep_gate_z in enumerate(gate_z_stack)
+            if nyquist_mask[i]
         ]
 
     z_3d = np.concatenate(gate_z_stack, axis=0)
