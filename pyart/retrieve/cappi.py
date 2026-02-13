@@ -18,6 +18,7 @@ def create_cappi(
     vel_field="velocity",
     same_nyquist=True,
     nyquist_vector_idx=0,
+    max_height_diff=None,
 ):
     """
     Create a Constant Altitude Plan Position Indicator (CAPPI) from radar data.
@@ -43,6 +44,11 @@ def create_cappi(
     nyquist_vector_idx : int, optional
         Index for the Nyquist velocity vector if `same_nyquist` is True.
         Default is 0.
+    max_height_diff : float, optional
+        Maximum allowed difference (meters) between the requested CAPPI height
+        and the closest available gate height. Gates farther than this
+        threshold are masked out. If None, a data-driven tolerance equal to
+        twice the median vertical gate spacing is used. Default is None.
 
     Returns
     -------
@@ -144,8 +150,39 @@ def create_cappi(
         ]
 
     z_3d = np.concatenate(gate_z_stack, axis=0)
+
     # Find nearest gates to requested height using refractivity/curvature-adjusted geometry
     height_idx = np.argmin(np.abs(z_3d - height), axis=0)
+    selected_gate_z = np.take_along_axis(
+        z_3d, height_idx[np.newaxis, :, :], axis=0
+    ).squeeze(axis=0)
+
+    # Derive a height tolerance if none provided. Use the median positive gate-to-gate
+    # spacing across the volume to approximate vertical resolution.
+    if max_height_diff is None:
+        z_sorted = np.sort(z_3d.ravel())
+        dz = np.diff(z_sorted)
+        dz = dz[dz > 0]
+        if dz.size == 0:
+            derived_tol = 1000.0  # fallback to 1 km
+        else:
+            derived_tol = 2.0 * np.median(dz)
+        height_tol = max(500.0, derived_tol)  # enforce a sensible floor
+    else:
+        height_tol = float(max_height_diff)
+
+    # Mask gates that are too far from the requested height (e.g., asking for 20 km
+    # when the volume tops out near 14 km). Also warn when the request is outside
+    # the available volume.
+    max_available = z_3d.max()
+    min_available = z_3d.min()
+    if height > max_available + height_tol or height < min_available - height_tol:
+        print(
+            f"Warning: requested CAPPI height {height} m is outside available gates "
+            f"({min_available:.0f}-{max_available:.0f} m). Output will be fully masked."
+        )
+
+    height_mask = np.abs(selected_gate_z - height) > height_tol
     # Generate CAPPI for each field using data_stack
     fields_data = {}
     for field in fields:
@@ -160,6 +197,7 @@ def create_cappi(
         CAPPI = np.take_along_axis(
             data_3d, height_idx[np.newaxis, :, :], axis=0
         ).squeeze(axis=0)
+        CAPPI = np.ma.array(CAPPI, mask=height_mask)
 
         # Retrieve units and handle case where units might be missing
         units = radar.fields[field].get("units", "").lower()
@@ -221,22 +259,32 @@ def create_cappi(
     time["data"] = time_final
     time["mean"] = dtime
 
-    # Create the Radar object with the new CAPPI data
+    # CAPPI represents a single synthesized sweep on the reference azimuth grid
+    n_rays = azimuth_final.size
+    sweep_number = {"data": np.array([0], dtype="int32")}
+    sweep_mode = {"data": np.array(["ppi"], dtype="object")}
+    sweep_start_ray_index = {"data": np.array([0], dtype="int32")}
+    sweep_end_ray_index = {"data": np.array([n_rays - 1], dtype="int32")}
+    fixed_angle = {"data": np.array([0.0], dtype="float32")}
+
+    # Create the Radar object with the new CAPPI data.  Keep site metadata but
+    # reset sweep descriptors and azimuth to match the CAPPI grid so display
+    # libraries do not mis-align fields (which showed up as a 90° rotation).
     return Radar(
-        time=radar.time.copy(),
+        time=time,
         _range=radar.range.copy(),
         fields=fields_data,
         metadata=radar.metadata.copy(),
-        scan_type=radar.scan_type,
+        scan_type="ppi",
         latitude=radar.latitude.copy(),
         longitude=radar.longitude.copy(),
         altitude=radar.altitude.copy(),
-        sweep_number=radar.sweep_number.copy(),
-        sweep_mode=radar.sweep_mode.copy(),
-        fixed_angle=radar.fixed_angle.copy(),
-        sweep_start_ray_index=radar.sweep_start_ray_index.copy(),
-        sweep_end_ray_index=radar.sweep_end_ray_index.copy(),
-        azimuth=radar.azimuth.copy(),
+        sweep_number=sweep_number,
+        sweep_mode=sweep_mode,
+        fixed_angle=fixed_angle,
+        sweep_start_ray_index=sweep_start_ray_index,
+        sweep_end_ray_index=sweep_end_ray_index,
+        azimuth={"data": azimuth_final},
         elevation={"data": elevation_final},
-        instrument_parameters=radar.instrument_parameters,
+        instrument_parameters=None,
     )
