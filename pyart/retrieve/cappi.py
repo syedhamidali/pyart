@@ -286,5 +286,5 @@ def create_cappi(
         sweep_end_ray_index=sweep_end_ray_index,
         azimuth={"data": azimuth_final},
         elevation={"data": elevation_final},
-        instrument_parameters=None,
+        instrument_parameters=radar.instrument_parameters,
     )
